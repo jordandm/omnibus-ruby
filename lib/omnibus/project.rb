@@ -354,6 +354,8 @@ module Omnibus
         [ "deb" ]
       when 'fedora', 'rhel'
         [ "rpm" ]
+      when 'aix'
+        [ "bff" ]
       when 'solaris2'
         [ "solaris" ]
       when 'windows'
@@ -408,6 +410,53 @@ module Omnibus
       # Don't care about the 204 return code from light.exe since it's
       # about some expected warnings...
       [msi_command.join(" "), {:returns => [0, 204]}]
+    end
+
+    def bff_command
+
+      the_command = "rm -rf /.info"
+      puts the_command
+      `#{the_command}`
+
+      the_command = "rm -rf /tmp/bff"
+      puts the_command
+      `#{the_command}`
+
+      the_command = "mkdir /tmp/bff"
+      puts the_command
+      `#{the_command}`
+
+      the_version = build_version.split(/\-/).first
+      the_version = "#{the_version}.0"
+      puts "VRMF = #{the_version}"
+
+      the_command = "find /opt/chef -print > /tmp/bff/file.list"
+      puts the_command
+      `#{the_command}`
+
+      the_command = "cat /opt/chef-build/omnibus-ruby/lib/omnibus/aix-files/opscode.chef.client.template | sed -e 's/TBS/#{the_version}/' > /tmp/bff/gen.preamble"
+      puts the_command
+      `#{the_command}`
+
+      the_command = "cat /tmp/bff/gen.preamble /tmp/bff/file.list /opt/chef-build/omnibus-ruby/lib/omnibus/aix-files/opscode.chef.client.template.last > /tmp/bff/gen.template"
+      puts the_command
+      `#{the_command}`
+
+      the_command = "cp /opt/chef-build/omnibus-ruby/lib/omnibus/aix-files/unpostinstall.sh /opt/chef/bin "
+      puts the_command
+      `#{the_command}`
+
+      the_command = "cp /opt/chef-build/omnibus-ruby/lib/omnibus/aix-files/postinstall.sh /opt/chef/bin "
+      puts the_command
+      `#{the_command}`
+
+      the_command = "cp /opt/chef-build/sigar.git/bindings/ruby/sigar.so /opt/chef/embedded/lib/ruby/1.9.1/powerpc-aix6.1.0.0 "
+      puts the_command
+      `#{the_command}`
+
+      bff_command = ["mkinstallp -d / -T /tmp/bff/gen.template"]
+      puts bff_command
+      [bff_command.join(" "), {:returns => [0]}]
     end
 
     # The {https://github.com/jordansissel/fpm fpm} command to
@@ -505,6 +554,8 @@ module Omnibus
                 package_commands << "rm -f #{install_path}/makeselfinst"
               elsif pkg_type == "msi"
                 package_commands <<  msi_command
+              elsif pkg_type == "bff"
+                package_commands <<  bff_command
               else # pkg_type == "fpm"
                 package_commands <<  fpm_command(pkg_type).join(" ")
               end
@@ -540,6 +591,8 @@ module Omnibus
         task "#{@name}:copy" => (package_types.map {|pkg_type| "#{@name}:#{pkg_type}"}) do
           if OHAI.platform == "windows"
             cp_cmd = "xcopy #{config.package_dir}\\*.msi pkg\\ /Y"
+          elsif OHAI.platform == "aix"
+            cp_cmd = "cp /tmp/opscode.chef.client*.bff pkg/"
           else
             cp_cmd = "cp #{config.package_dir}/* pkg/"
           end

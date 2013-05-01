@@ -219,6 +219,10 @@ module Omnibus
       # #stdout will hurt memory usage drastically
       #
       ldd_cmd = "find #{install_dir}/ -type f | xargs ldd > ldd.out 2>/dev/null"
+      if OHAI.platform == "aix"
+        ldd_cmd = "find #{install_dir}/ -type f | xargs file | grep \"RISC System\" | awk -F: '{print $1}' | xargs ldd > ldd.out 2>/dev/null"
+      end
+
       log "Executing `#{ldd_cmd}`"
       shell = Mixlib::ShellOut.new(ldd_cmd, :timeout => 3600)
       shell.run_command
