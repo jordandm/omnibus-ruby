@@ -434,22 +434,27 @@ module Omnibus
       puts the_command
       `#{the_command}`
 
+      # FIXME: hardcoded path nastiness
       the_command = "cat /opt/chef-build/omnibus-ruby/lib/omnibus/aix-files/opscode.chef.client.template | sed -e 's/TBS/#{the_version}/' > /tmp/bff/gen.preamble"
       puts the_command
       `#{the_command}`
 
+      # FIXME: hardcoded path nastiness
       the_command = "cat /tmp/bff/gen.preamble /tmp/bff/file.list /opt/chef-build/omnibus-ruby/lib/omnibus/aix-files/opscode.chef.client.template.last > /tmp/bff/gen.template"
       puts the_command
       `#{the_command}`
 
+      # FIXME: move to omnibus-software
       the_command = "cp /opt/chef-build/omnibus-ruby/lib/omnibus/aix-files/unpostinstall.sh /opt/chef/bin "
       puts the_command
       `#{the_command}`
 
+      # FIXME: move to omnibus-software
       the_command = "cp /opt/chef-build/omnibus-ruby/lib/omnibus/aix-files/postinstall.sh /opt/chef/bin "
       puts the_command
       `#{the_command}`
 
+      # FIXME: move to omnibus-software, and uh, build sigar rather than pooping out a magical .so
       the_command = "cp /opt/chef-build/sigar.git/bindings/ruby/sigar.so /opt/chef/embedded/lib/ruby/1.9.1/powerpc-aix6.1.0.0 "
       puts the_command
       `#{the_command}`

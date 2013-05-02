@@ -220,6 +220,7 @@ module Omnibus
       #
       ldd_cmd = "find #{install_dir}/ -type f | xargs ldd > ldd.out 2>/dev/null"
       if OHAI.platform == "aix"
+        # FIXME: check the format out of the output, I strongly doubt that this this working
         ldd_cmd = "find #{install_dir}/ -type f | xargs file | grep \"RISC System\" | awk -F: '{print $1}' | xargs ldd > ldd.out 2>/dev/null"
       end
 
